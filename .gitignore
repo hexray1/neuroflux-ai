@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.db
+*.log
+.env
+neuroflux.db
+bot_output.log
+neuroflux.log
