@@ -15,7 +15,7 @@ import database as db
 import ai_engine as ai
 
 # ─── CONFIG (Railway env vars) ────────────────────────────────
-TOKEN = os.environ.get("BOT_TOKEN", "8741072642:AAGvBFbcxyNyPuGAUKvcqykOq-AeOG8dZ6g")
+TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "5350231648"))
 
 # ─── LOGGING ───────────────────────────────────────────────────

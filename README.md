@@ -28,7 +28,7 @@ A production-ready, high-performance Telegram AI bot designed for viral growth, 
 - **Daily Alerts** — AI-generated retention notifications at 9 AM
 - **Admin Panel** — User stats, broadcast system
 
-## 🚀 Deploy on Railway (1-Click)
+## 🚀 Deploy on Render (1-Click)
 
 ### Step 1: Push to GitHub
 ```bash
@@ -39,9 +39,9 @@ git remote add origin https://github.com/YOUR_USERNAME/neuroflux-ai.git
 git push -u origin main
 ```
 
-### Step 2: Deploy on Railway
-1. Go to [railway.app](https://railway.app)
-2. Click **New Project** → **Deploy from GitHub repo**
+### Step 2: Deploy on Render
+1. Go to [render.com](https://render.com)
+2. Create a new Blueprint instance and connect your GitHub repository.
 3. Select your `neuroflux-ai` repository
 4. Add these **Environment Variables**:
 
@@ -52,8 +52,8 @@ git push -u origin main
 | `OPENAI_API_KEY` | Your OpenAI API key |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
 
-5. Railway auto-detects the `Procfile` and deploys
-6. Bot goes live in ~60 seconds
+5. Render will automatically detect the `render.yaml` file and deploy the bot as a Background Worker.
+6. The bot should go live within a few minutes.
 
 ### Step 3: Test
 Send `/start` to your bot on Telegram.
@@ -66,7 +66,7 @@ neuroflux-ai/
 ├── ai_engine.py        # All AI functions (OpenAI integration)
 ├── database.py         # SQLite database operations
 ├── requirements.txt    # Python dependencies
-├── Procfile            # Railway worker process
+├── render.yaml         # Render Blueprint configuration
 ├── runtime.txt         # Python version
 ├── .env.example        # Environment variable template
 ├── .gitignore          # Git ignore rules
@@ -87,7 +87,7 @@ neuroflux-ai/
 | `BOT_TOKEN` | ✅ | Telegram Bot API token |
 | `ADMIN_ID` | ✅ | Your Telegram user ID for admin access |
 | `OPENAI_API_KEY` | ✅ | OpenAI API key for AI features |
-| `OPENAI_BASE_URL` | ❌ | OpenAI API base URL (default: https://api.openai.com/v1) |
+| `OPENAI_BASE_URL` | ✅ | OpenAI API base URL (default: https://api.openai.com/v1) |
 
 ## 💎 Monetization Structure
 
