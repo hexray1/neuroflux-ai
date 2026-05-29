@@ -2,16 +2,11 @@ import os
 import logging
 from openai import OpenAI
 
-NVIDIA_API_KEY = os.environ.get("NVIDIA_API_KEY")
-NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-
-logger = logging.getLogger(__name__)
-
 client = OpenAI(
-    api_key=NVIDIA_API_KEY,
-    base_url=NVIDIA_BASE_URL
+    api_key=os.environ.get("NVIDIA_API_KEY"),
+    base_url="https://integrate.api.nvidia.com/v1"
 )
-MODEL = "nv-llama2-70b"
+MODEL = "meta/llama-3.1-8b-instruct"
 
 SYSTEM_PERSONALITY = """You are NeuroFlux AI — an elite, authoritative AI intelligence system. 
 Your personality:
