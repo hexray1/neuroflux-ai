@@ -32,6 +32,9 @@ def init_db():
         ai_messages_date TEXT,
         total_points INTEGER DEFAULT 0,
         unlocked INTEGER DEFAULT 0,
+        daily_streak INTEGER DEFAULT 0,
+        last_streak_date TEXT,
+        total_uses INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         last_active TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -97,8 +100,7 @@ def register_user(telegram_id, username, first_name, last_name, referred_by=None
         if referred_by:
             c.execute("UPDATE users SET referral_count = referral_count + 1 WHERE telegram_id = ?", (referred_by,))
             c.execute("UPDATE users SET total_points = total_points + 10 WHERE telegram_id = ?", (referred_by,))
-            # Auto-unlock if 3+ referrals
-            c.execute("UPDATE users SET unlocked = 1 WHERE telegram_id = ? AND referral_count >= 3", (referred_by,))
+            c.execute("UPDATE users SET unlocked = 1 WHERE telegram_id = ? AND referral_count >= 5", (referred_by,))
             conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -118,6 +120,13 @@ def update_last_active(telegram_id):
     conn = get_db()
     c = conn.cursor()
     c.execute("UPDATE users SET last_active = ? WHERE telegram_id = ?", (datetime.datetime.now().isoformat(), telegram_id))
+    conn.commit()
+    conn.close()
+
+def increment_total_uses(telegram_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("UPDATE users SET total_uses = total_uses + 1 WHERE telegram_id = ?", (telegram_id,))
     conn.commit()
     conn.close()
 
@@ -157,8 +166,8 @@ def check_ai_limit(telegram_id):
     if row["plan"] != "free":
         return True, 999
     if row["ai_messages_date"] != today:
-        return True, 5
-    remaining = 5 - row["ai_messages_today"]
+        return True, 15
+    remaining = 15 - row["ai_messages_today"]
     return remaining > 0, remaining
 
 def increment_ai_usage(telegram_id):
@@ -191,6 +200,56 @@ def find_user_by_referral_code(code):
     row = c.fetchone()
     conn.close()
     return row["telegram_id"] if row else None
+
+# Daily Streak
+def update_daily_streak(telegram_id):
+    conn = get_db()
+    c = conn.cursor()
+    today = datetime.date.today().isoformat()
+    yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+    c.execute("SELECT daily_streak, last_streak_date FROM users WHERE telegram_id = ?", (telegram_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return 0
+    last_date = row["last_streak_date"]
+    current_streak = row["daily_streak"] or 0
+    if last_date == today:
+        conn.close()
+        return current_streak
+    elif last_date == yesterday:
+        new_streak = current_streak + 1
+    else:
+        new_streak = 1
+    bonus = new_streak * 2
+    c.execute("UPDATE users SET daily_streak = ?, last_streak_date = ?, total_points = total_points + ? WHERE telegram_id = ?",
+              (new_streak, today, bonus, telegram_id))
+    conn.commit()
+    conn.close()
+    return new_streak
+
+def get_streak(telegram_id):
+    user = get_user(telegram_id)
+    if not user:
+        return 0
+    return user["daily_streak"] or 0
+
+# Leaderboard
+def get_leaderboard(limit=10):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT first_name, username, total_points, referral_count, daily_streak FROM users ORDER BY total_points DESC LIMIT ?", (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_referral_leaderboard(limit=10):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT first_name, username, referral_count FROM users ORDER BY referral_count DESC LIMIT ?", (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 # Notes
 def add_note(user_id, text):
